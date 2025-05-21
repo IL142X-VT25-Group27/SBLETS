@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>HAPP Objects to OMA DDF XML Converter</title>
+        <link href="style.css" rel="stylesheet">
+        <script type="text/javascript" src="/eel.js"></script>
+        <style>
+        .hidden {
+            display: none;
+        }
+        .toggle-div {
+            cursor: pointer;
+            background-color: #f1f1f1;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <form id="uploadForm">
+        <p>Export HAPP LwM2M Object Specification to XLSX and upload it here to generate OMA DDF XML files</p>
+        <input type="file" id="fileInput" />
+        <button type="submit">Generate</button>
+    </form>
+
+    <div id="log"></div>
+    <div id="response"></div>
+    <script type="text/javascript" src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+[Unit]
+Description=Syncore BLE Test System
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/user/SBLETS
+ExecStart=/usr/bin/python3 /home/user/SBLETS/app.py -v
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

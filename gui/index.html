@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SBLETS</title>
+    <link href="style.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <script type="text/javascript" src="/eel.js"></script>
+<!--    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">-->
+</head>
+<body onload="showPage('Info')">
+<nav>
+    <ul style="padding-top: 0px;">
+        <ul style="max-width: 1800px; margin-left: auto; margin-right: auto; padding-top: 0px;">
+            <li class="logo"><img class="logoImg" src="hqv_logo.png" alt=""></li>
+            <li class="logo"><a id="logoText">SBLETS</a></li>
+            <li style="margin-left: 20px;" class="logo"><a id="customName"></a></li>
+            <li class="logo" style="margin-left: 25px; padding-top: 0px;"><a id="barConnectStatus"></a></li>
+            <div class="dropdown">
+                <button style="box-shadow: none;" id="dropdown_button" class="navButton">More</button>
+            <ul id="dropdown_items" class="dropdown_items"></ul>
+            </div>
+            <ul id="navbar_items">
+                <li data-order="1" ><a href="#" class="navButton" id="Info_button" onclick="showPage('Info')"><i class="fa-solid fa-info"></i>Info</a></li>
+                <li data-order="2"><a href="#" class="navButton" id="SBLETSnetwork_button" onclick="showPage('SBLETSnetwork')"><i class="fa-solid fa-info"></i>SBLETS Network</a></li>
+                <li data-order="3"><a href="#" class="navButton" id="HAPPfinder_button" onclick="showPage('HAPPfinder')"><i class="fa-solid fa-magnifying-glass"></i>HAPP Device Finder</a></li>
+                <li data-order="4"><a href="#" class="navButton" id="modelGen_button" onclick="showPage('modelGen')"><i class="fa-solid fa-diagram-project"></i>Update Leshan Models</a></li>
+                <li data-order="5"><a href="#" class="navButton" id="easyConnect_button" onclick="showPage('easyConnect')"><i class="fa-solid fa-link"></i>Connect</a></li>
+                <li data-order="6"><a href="#" class="navButton" id="leshan_button" onclick="">Leshan</a></li>
+            </ul>
+        </ul>
+    </ul>
+</nav>
+<main>
+    <div id="modelGen" class="page">
+        <form id="uploadForm">
+            <h2>Update Leshan Models</h2>
+            <p style="max-width: 900px;">If an object is missing, or "model unknown" is reported, in Leshan try to update the OMA DDF files with this tool. Select the HAPP LwM2M Object Specification Excel file and click "Generate." The files will automatically be saved to the models folder of Leshan (configured in config.ini) and downloaded to your browser. If another LwM2M server is used, this tool should work as well, but some manual steps might be required.</p>
+            <label style="display: none;" for="fileInput" class="customFileInput">
+                Choose File
+            </label>
+            <input placeholder="Select XLSX file" type="file" id="fileInput" type="file" style="max-width: 200px;"/>
+            <button type="submit">Generate</button>
+        </form>
+        <br>
+        <div id="log_modelGen"></div>
+        <div id="response_modelGen"></div>
+    </div>
+
+    <div id="HAPPfinder" class="page">
+        <form style="margin-bottom: 40px;" id="triggerSearch">
+            <h2>HAPP Device Finder</h2>
+            <p style="max-width: 900px;">Scans for Bluetooth devices near the SBLETS server and identifies HAPP devices. Identified devices are displayed with their MAC address, IPRID, Need to Connect status, Do not Connect status, RSSI and an Alias and a Key if present. This service is also available via the TCP socket using command 16.</p>
+            <button type="submit">Scan</button>
+            <div style="margin: auto auto; position:absolute; left:47%; top:47%;
+               transform:translate(-47%, -47%); visibility: hidden;" id="loader" class="loader"></div>
+        </form>
+        <p id="recogDevices" style="visibility: hidden;"><strong>Identified HAPP devices:</strong></p>
+        <div id="foundDevices">
+
+        </div>
+        <div id="log_HAPPfinder"></div>
+        <div id="response_HAPPfinder"></div>
+    </div>
+
+    <div id="SBLETSnetwork" class="page">
+        <p>Other online SBLETS servers discovered on the same network are listed here. Server broadcasting is made every 10 seconds.</p>
+        <div id="sbletsServers">
+        </div>
+    </div>
+
+    <div id="Info" class="page" style="text-align: center;">
+        <img alt="HQV Logo" src="hqv_logo.png" style="max-width: 80px; margin-top: 20px;">
+        <h2><strong>SBLETS</strong></h2>
+        <h3 style="margin-bottom: 0px; max-width: 800px; margin-right: auto; margin-left: auto; text-align: left;" id="ncpsTitle" >Available NCPs:</h3>
+        <div style="margin-top: 2px; margin-bottom: 0px; max-width: 800px; margin-right: auto; margin-left: auto; text-align: left;" id="ncps">
+            <p style="margin-top: 2px; margin-bottom: 0px; max-width: 800px; margin-right: auto; margin-left: auto; text-align: left;">TCP socket: IP: <strong id="tcpIP">unknown</strong>, port: <strong id="tcpPort">unknown</strong> (payload=bytearray, response=bytearray)</p>
+            <p style="margin-top: 0px; max-width: 800px; margin-right: auto; margin-left: auto; text-align: left;">WebSocket (forwards message to TCP socket): <strong id="wsLink">ws://ip:port</strong> (payload=bytearray, response=bytearray)</p>
+        </div>
+        <div id="BLEcontainer" style="display: none;">
+            <h3 style="margin-bottom: 2px; max-width: 800px; margin-right: auto; margin-left: auto; text-align: left;">Connected BLE Device:</h3>
+            <div id="BLEinfo">
+                <p id="Leshan" style="margin-top: 2px; margin-bottom: 0px; max-width: 800px; margin-right: auto; margin-left: auto; text-align: left;"><a id="LeshanA">Not connected to Leshan</a></p>
+                <p id="Endpoint" style="margin-top: 2px; margin-bottom: 0px; max-width: 800px; margin-right: auto; margin-left: auto; text-align: left; display: none;"><strong>Endpoint: </strong><a id="EndpointA"></a></p>
+                <p id="HID" style="margin-top: 2px; margin-bottom: 0px; max-width: 800px; margin-right: auto; margin-left: auto; text-align: left; display: none;"><strong>HID: </strong><a id="HIDA"></a></p>
+                <p id="Alias" style="margin-top: 2px; margin-bottom: 0px; max-width: 800px; margin-right: auto; margin-left: auto; text-align: left; display: none;"><strong>Alias: </strong><a id="AliasA"></a></p>
+            </div>
+        </div>
+        <h3 style="margin-bottom: 2px; max-width: 800px; margin-right: auto; margin-left: auto; text-align: left;">Session info:</h3>
+        <div style="max-width: 800px; margin: auto; text-align: left;" id="infoDisplay"></div>
+        <br>
+        <h3><strong>Real time minimal log (cleared after reload)</strong></h3>
+        <div id="logBorder">
+            <div id="minimalLog"></div>
+        </div>
+    </div>
+
+    <div id="easyConnect" class="page">
+        <h2>Connect to a HAPP BLE Device</h2>
+        <form id="macForm">
+            <label for="macAddress">MAC address:</label>
+            <input type="text" id="macAddress" name="macAddress" placeholder="00:1A:2B:3C:4D:5E" required>
+            <button style="background-color: rgba(39, 39, 39, 0.8); box-shadow: none;" type="submit">Connect</button>
+        </form>
+        <p><strong>Status: </strong><a id="connectStatus">unknown</a></p>
+        <br>
+        <h3>Send custom command to WebSocket server</h3>
+        <form id="customCMDForm">
+            <label for="customCMD">Custom CMD:</label>
+            <input type="text" id="customCMD" name="customCMD" placeholder="0x02/0x0F/0x03" value="0x02/0x0F/0x03" required>
+            <button style="background-color: rgba(39, 39, 39, 0.8); box-shadow: none;" type="submit">Send</button>
+            <p><strong>Raw response: </strong><a id="rawResponse">unknown</a></p>
+        </form>
+        <br>
+        <h3>Pre-defined commands</h3>
+        <button onclick="sendCustomCommand('0x02/0x0F/0x03')">Stop Gateway</button>
+    </div>
+</main>
+</body>
+<script type="text/javascript" src="main.js"></script>
+</html>

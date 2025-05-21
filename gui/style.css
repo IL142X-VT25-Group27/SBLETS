@@ -1,0 +1,201 @@
+body{
+    margin: 0px;
+    font-family: Roboto, sans-serif;
+    color: rgba(0,0,0,.87);
+}
+main {
+    max-width: 1500px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 40px;
+}
+.hidden {
+    display: none;
+}
+.toggle-div {
+    cursor: pointer;
+    background-color: #f1f1f1;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #272727;
+    padding-left: 25px;
+    padding-right: 25px;
+    max-height: 48px;
+}
+
+li, #dropdown_button{
+  float: right;
+}
+
+li a, #dropdown_button{
+    display: block;
+    color: hsla(0, 0%, 100%, .6);
+    text-align: center;
+    padding: 16px 10px;
+    text-decoration: none;
+    font-weight: 530;
+    text-transform: uppercase;
+    font-weight: 500;
+    font-size: .875rem;
+    letter-spacing: 1.25px;
+    line-height: normal;
+    text-rendering: optimizeLegibility;
+}
+
+#dropdown_button {
+    display: block;
+}
+
+.dropdown_items {
+    @extend ul;
+    visibility: hidden;
+    position: absolute;
+    padding-left: 0px;
+    padding-right: 0px;
+    top: 48px;
+    right: 0;
+}
+
+#dropdown_button::after {
+    content: '▼';
+    font-size: 12px;
+    margin-left: 8px;
+    transition: transform 0.3s ease;
+}
+
+#dropdown_button.open::after {
+    content: '▲';
+    transform: rotate(180deg);
+}
+
+#navbar_items a:hover {
+  background-color: #111;
+}
+
+.active {
+    background-color: #111;
+    border-bottom: 10px solid white;
+    padding-bottom: 13px;
+    color: white;
+}
+
+.logo {
+    float: left;
+}
+
+.logo a {
+    all: unset;
+    display: block;
+    padding: 12.5px 0px;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 20px;
+    font-stretch: 100%;
+}
+
+.logoImg {
+    width: 25px;
+    padding: 9px;
+    padding-right: 5px;
+    padding-bottom: 0px;
+}
+
+#logoText {
+
+}
+
+#barConnectStatus {
+    padding-left: 5px;
+    padding-right: 5px;
+    display: none;
+    background-color: green;
+}
+
+.barConnectStatus_red {
+    background-color: red !important;
+}
+
+.customFileInput {
+    background-color: #f4f4f4;
+    border: none;
+    color: black;
+    padding: 15px 32px;
+    border-radius: 4px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button {
+    background-color: #272727;
+    font-family: Roboto, sans-serif;
+    border: none;
+    color: white;
+    height: 36px;
+    padding: 0px 16px;
+    border-radius: 4px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    cursor:pointer;
+    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: 1.25px;
+    font-stretch: 100%;
+    tab-size: 4;
+    box-shadow: 0 3px 1px -2px rgba(0, 0, 0, .2), 0 2px 2px 0 rgba(0, 0, 0, .14), 0 1px 5px 0 rgba(0, 0, 0, .12);
+}
+
+#logBorder{
+    border: 1px solid grey;
+    max-width: 800px;
+    max-height: 400px;
+    min-height: 50px;
+    margin: auto;
+    border-radius: 4px;
+    padding-bottom: 15px;
+    padding-left: 10px;
+    text-align: left;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.easyConnectButton {
+    button;
+    padding: 8px 15px;
+    margin: 5px;
+}
+
+.loader {
+    border: 4px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 4px solid black;
+    width: 30px;
+    height: 30px;
+    -webkit-animation: spin 2s linear infinite; /* Safari */
+    animation: spin 2s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+    0% { -webkit-transform: rotate(0deg); }
+    100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

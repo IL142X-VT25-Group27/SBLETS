@@ -1,0 +1,151 @@
+# Description: BLE Interface
+# Author: Syncore Technologies AB
+#
+# -----------------------------------------------------------------
+
+from bleak import BleakClient, BleakScanner
+from bleak.backends.characteristic import BleakGATTCharacteristic
+from bleak.exc import BleakError
+import logging, asyncio
+from typing import Optional
+import BleToUdpPayload
+import time
+
+
+class BLE_interface:
+    async def start(
+        self,
+        addr_str,
+        addr_type,
+        adapter,
+        write_uuid,
+        read_uuid,
+        timeout_,
+        callback,
+    ):
+        self._ITS_cb = callback
+        self._send_queue = asyncio.Queue()
+        self._connected = False
+
+        if timeout_ is None:
+            timeout = 60
+        else:
+            timeout = timeout_
+
+        # Testa start ----------------------------------------------------------------------------
+        """logging.info(f"Trying to connect with {addr_str}")
+        device = await BleakScanner.find_device_by_address(addr_str, timeout) # Orginal
+        logging.debug(f"Device found: {device}") # Orginal
+        device_data = BleakScanner.advertisement_data(addr_str)
+        logging.debug(f"Device_Data: {device_data}")
+        # Testa stop  ----------------------------------------------------------------------------
+
+        if device is None:
+            logging.info("No devices found, try again later.")
+            self._ITS_cb("Connected: NO", addr_str)
+            raise Exception("No devices found, try again later.")
+        """
+        endtime = time.time() + 60  # TODO: A better way of doing this
+
+        while endtime > time.time():
+
+            try:
+                self.dev = BleakClient(
+                    addr_str, adapter=adapter, address_type=addr_type, timeout=60.0
+                )
+                
+                #self.dev = BleakClient(addr_str, disconnected_callback=self.handle_disconnect)
+                logging.info(f"Trying to connect with {addr_str}")
+                logging.debug("Test 5 - Trying to connect with") ## Kommer inte längre än hit
+                ## Test start ----------------------------------------------------------------------------
+
+                ## Test slut  ----------------------------------------------------------------------------
+                await self.dev.connect(timeout=60.0)
+                logging.debug("Test 6 - Trying to connect with")
+                logging.info(f"Device {self.dev.address} connected")
+                self._ITS_cb("Connected: YES", addr_str)
+                self.write_char = self.find_char(write_uuid, "write-without-response")
+                self.read_char = self.find_char(read_uuid, "notify")
+
+                self._bletoudp = BleToUdpPayload.BleToUdpPayload()
+
+                await self.dev.start_notify(self.read_char, self.handle_notify)
+                self._connected = True
+                break
+
+            except Exception as e:
+                logging.warning(e)
+                pass
+
+    def find_char(self, uuid: Optional[str], req_prop: str) -> BleakGATTCharacteristic:
+        found_char = None
+
+        uuid_candidates = uuid
+
+        for srv in self.dev.services:
+            for c in srv.characteristics:
+                if c.uuid in uuid_candidates:
+                    found_char = c
+                    logging.debug(f"Found {req_prop} characteristic {c}")
+                    break
+
+        # Check if it has the required properties
+        assert found_char, "No characteristic with specified UUID found!"
+        assert (
+            req_prop in found_char.properties
+        ), f"Specified characteristic has no {req_prop} property!"
+
+        return found_char
+
+    def set_receiver(self, callback):
+        self._cb = callback
+        logging.info("BLE Receiver set up")
+
+    async def send_loop(self):
+        assert hasattr(self, "_cb"), "Callback must be set before receive loop!"
+        while True:
+            data = await self._send_queue.get()
+            if data == None:
+                logging.debug(f"Break BLE Send Loop")
+                break  # Let future end on shutdown
+            logging.debug(f"Write BLE: ({len(data)}) {data}")
+            await self.dev.write_gatt_char(self.write_char, data)
+
+    def stop_loop(self):
+        logging.info("Stopping Bluetooth event loop")
+        self._send_queue.put_nowait(None)
+
+    async def disconnect(self):
+        # Wait for the disconnect event
+        await asyncio.sleep(5)
+        if hasattr(self, "dev"):
+
+            if self.dev.is_connected and self._connected:
+                logging.debug("Bluetooth still connected")
+                if hasattr(self, "read_char"):
+                    await self.dev.stop_notify(self.read_char)
+                await self.dev.disconnect()
+                self._connected = False
+                logging.info("Bluetooth disconnected")
+
+    def queue_send(self, data: bytes):
+        # logging.debug('queue_send')
+        self._send_queue.put_nowait(data)
+
+    def handle_notify(self, handle: int, data: bytes):
+        logging.debug(f"Received BLE: ({len(data)})  {data}")
+
+        udpmessage = self._bletoudp.Convert(data)  # {Payload , Type}
+        # logging.debug(f"Buffer Size: {len(self._bletoudp.messageBuffer)}")
+
+        # All data received? and Destination Server
+        if not (udpmessage is None) and (udpmessage[1] == 3):  # Remote Server
+            self._cb(udpmessage[0])
+        elif not (udpmessage is None) and (udpmessage[1] == 2):  # Local Server
+            logging.debug(f"To Local Server, FG")
+
+    def handle_disconnect(self, client: BleakClient):
+        logging.warning(f"Device {client.address} disconnected")
+        self._connected = False
+        self._ITS_cb("BT Disconnected", client.address)
+        raise BleakError(f"{client.address} disconnected!")

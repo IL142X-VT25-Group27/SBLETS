@@ -1,0 +1,16 @@
+# Exclude Documentation directory
+Documentation/
+
+# Exclude Executables directory
+Executables/
+
+# Exclude SBLETSp3.12 directory
+SBLETSp3.12/
+
+# Exclude specific executable files
+Standalone applications/HAPP Device Finder/HAPP Device Finder.exe
+Standalone applications/HAPP Objects to OMA DDF XML Converter/HAPP Objects to OMA DDF XML Converter.exe
+
+# Exclude build and dist directories
+build/
+dist/
