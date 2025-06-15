@@ -642,3 +642,207 @@ window.addEventListener('resize', updateNavbar);
 // Update navbar after application load
 document.addEventListener('load', updateNavbar);
 
+function startSimulation() {
+    const simType = document.getElementById("simulationType").value;
+
+    switch (simType) {
+        case "rev50":
+            eel.startSimRev50()(function () {
+                console.log("Simulation Rev 50 started");
+            });
+            break;
+        case "rev150":
+            eel.startSimRev150()(function () {
+                console.log("Simulation Rev 150 started");
+            });
+            break;
+        case "rev250":
+            eel.startSimRev250()(function () {
+                console.log("Simulation Rev 250 started");
+            });
+            break;
+        case "highlow":
+            eel.startSimHighAndLow()(function () {
+                console.log("High/Low Simulation started");
+            });
+            break;
+        case "long":
+            eel.startSimLong()(function () {
+                console.log("Long Simulation started");
+            });
+            break;
+        default:
+            alert("Please select a valid simulation.");
+    }
+}
+
+eel.expose(putSimLog);
+function putSimLog(msg) {
+    const logDiv = document.getElementById("simulationLog");
+    const newLine = document.createElement("div");
+    newLine.textContent = msg;
+    logDiv.appendChild(newLine);
+    logDiv.scrollTop = logDiv.scrollHeight; // auto-scroll
+}
+
+document.getElementById("startSimulationBtn").addEventListener("click", () => {
+    document.getElementById("simulationLog").innerHTML = "";
+});
+
+document.getElementById("clearLogBtn").addEventListener("click", () => {
+    document.getElementById("simulationLog").innerHTML = "";
+});
+
+function translateError(value) {
+    const map = {
+        0: "No error",
+        1: "Low battery power",
+        2: "External power supply off",
+        3: "GPS module failure",
+        4: "Low received signal strength",
+        5: "Out of memory",
+        6: "SMS failure",
+        7: "IP connectivity failure",
+        8: "Peripheral malfunction"
+    };
+    return map[parseInt(value)] || value;
+}
+
+window.onload = function () {
+    // Always load simulation log files
+    eel.list_simlog_files()(function(files) {
+        const select = document.getElementById("logfile");
+        select.innerHTML = "";
+
+        if (!files || files.length === 0) {
+            let option = document.createElement("option");
+            option.text = "No log files found";
+            option.disabled = true;
+            option.selected = true;
+            select.add(option);
+            return;
+        }
+
+        files.forEach(function(file) {
+            let option = document.createElement("option");
+            option.value = file;
+            option.text = file;
+            select.add(option);
+        });
+    });
+
+    // Only list Leshan instances if a device is connected
+    eel.getSessionData('connectedDeviceMac')(function(mac) {
+        if (!mac) {
+            console.log("No device connected. Skipping Leshan instance listing.");
+            return;
+        }
+
+        eel.list_leshan_instances()(function(instances) {
+            const select = document.getElementById("sessionId");
+            select.innerHTML = "";
+
+            if (!instances || instances.length === 0) {
+                let option = document.createElement("option");
+                option.text = "No instances found";
+                option.disabled = true;
+                option.selected = true;
+                select.add(option);
+                return;
+            }
+
+            instances.forEach(function(instance) {
+                let option = document.createElement("option");
+                option.value = instance;
+                option.text = instance;
+                select.add(option);
+            });
+        });
+    });
+
+    // Load device stats from backend
+    eel.get_device_stats()(function(data) {
+        if (data.error) {
+            document.getElementById('connectStatusCd').innerText = data.error;
+            return;
+        }
+        document.getElementById('connectStatusCd').innerText = "Connected";
+
+        // Update UI with stats
+        document.getElementById('serialNumber').innerText = data.serial_number || 'N/A';
+        document.getElementById('batteryLevel').innerText = data.battery_level || 'N/A';
+        document.getElementById('batteryStatus').innerText = translateError(data.battery_status);
+        document.getElementById('errorCode').innerText = translateError(data.error_code);
+        document.getElementById('motorTime').innerText = data.total_motor_running_time || 'N/A';
+        document.getElementById('usageTime').innerText = data.total_usage_running_time || 'N/A';
+
+        // Show hidden fields
+        document.querySelector('.device-details').classList.remove('hidden');
+    });
+};
+
+document.getElementById("fetchHistogramBtn").addEventListener("click", function () {
+    const sessionSelect = document.getElementById("sessionId");
+    const selectedId = sessionSelect.value;
+
+    if (!selectedId) {
+        alert("Please select a session ID.");
+        return;
+    }
+
+    eel.get_histogram_data(selectedId)(function (result) {
+        const output = document.getElementById("histogramData");
+
+        if (typeof result === "object" && result.error) {
+            output.innerText = `Error: ${result.error}`;
+        } else {
+            output.innerText = result || "No histogram data returned.";
+        }
+    });
+});
+
+document.getElementById('plotResult').addEventListener('click', function(event) {
+    event.preventDefault();  // Prevent form submission if inside a form
+    
+    // Get selected plot types
+    const selectedPlots = Array.from(document.querySelectorAll('input[name="plotType"]:checked'))
+        .map(el => el.value);
+
+    // Get selected session id
+    const sessionId = document.getElementById('sessionId').value;
+
+    // Get selected logfile
+    const logfile = document.getElementById('logfile').value;
+
+    console.log('Plots:', selectedPlots);
+    console.log('Session:', sessionId);
+    console.log('Logfile:', logfile);
+});
+
+async function requestAndShowPlot() {
+    const selectedLog = document.getElementById('logfile').value;
+    const sessionId = document.getElementById('sessionId').value;
+    const selectedTypes = [...document.querySelectorAll('input[name="plotType"]:checked')].map(el => el.value);
+
+    if (!selectedLog || selectedTypes.length === 0) return;
+
+    const plotContainer = document.getElementById('plotContainer');
+    plotContainer.innerHTML = ''; // Clear old plots
+
+    for (const type of selectedTypes) {
+        try {
+            const base64img = await eel.generate_plot(selectedLog, sessionId, type)();
+            if (base64img) {
+                const img = document.createElement('img');
+                img.src = `data:image/png;base64,${base64img}`;
+                img.style.maxWidth = '100%';
+                img.style.marginTop = '20px';
+                plotContainer.appendChild(img);
+            } else {
+                console.warn(`Failed to generate plot: ${type}`);
+            }
+        } catch (err) {
+            console.error(`Error generating plot for ${type}:`, err);
+        }
+    }
+}

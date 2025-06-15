@@ -30,7 +30,8 @@ all_libraries = [
     'winrt.windows.foundation.collections',
     'winrt.windows.storage.streams',
     'winrt.runtime',
-    'requests'
+    'requests',
+    'pyserial'
 ]
 
 hidden_imports = []
@@ -50,6 +51,7 @@ a = Analysis(
         ('SessionData.py', '.'),
         ('webserver.py', '.'),
         ('bluetoothctl_wrapper.py', '.'),
+        ('plot.py', '.'),
     ],
     hiddenimports=hidden_imports,
     hookspath=[],

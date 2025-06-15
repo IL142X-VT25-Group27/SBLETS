@@ -14,3 +14,18 @@ Standalone applications/HAPP Objects to OMA DDF XML Converter/HAPP Objects to OM
 # Exclude build and dist directories
 build/
 dist/
+
+# Exclude Python cache directories
+__pycache__/
+# Exclude Python bytecode files
+*.pyc
+# Exclude Python egg files
+*.egg
+# Exclude Python egg-info directories
+*.egg-info/
+# Exclude virtual environment directories
+venv/
+# Exclude Jupyter Notebook checkpoints
+.checkpoint/
+# Exclude log files
+*.log

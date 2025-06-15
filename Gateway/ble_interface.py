@@ -28,6 +28,8 @@ config = configparser.ConfigParser()
 # Read the configuration file
 config.read('config.ini')
 
+# Timeout value for BleakClient
+bleTimeout = int(config.get("BLE", "Timeout", fallback="40"))
 
 class BLE_interface:
     async def start(
@@ -69,7 +71,7 @@ class BLE_interface:
                 pass
 
         if timeout_ is None:
-            timeout = 40
+            timeout = bleTimeout
         else:
             timeout = timeout_
 
@@ -105,7 +107,7 @@ class BLE_interface:
                 logging.info(f"Device found, trying to connect with {addr_str}")
                 eel.putRLog(f"ble_interface.py: Device found, trying to connect with {addr_str}")
                 self.dev = BleakClient(
-                    addr_str, timeout=60 ,adapter=adapter, address_type=addr_type, disconnected_callback=self.handle_disconnect
+                    addr_str, timeout=bleTimeout ,adapter=adapter, address_type=addr_type, disconnected_callback=self.handle_disconnect
                 )
                 # self.dev = BleakClient(addr_str, disconnected_callback=self.handle_disconnect)
                 #await self.dev.connect()

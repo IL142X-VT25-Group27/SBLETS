@@ -28,6 +28,7 @@
                 <li data-order="4"><a href="#" class="navButton" id="modelGen_button" onclick="showPage('modelGen')"><i class="fa-solid fa-diagram-project"></i>Update Leshan Models</a></li>
                 <li data-order="5"><a href="#" class="navButton" id="easyConnect_button" onclick="showPage('easyConnect')"><i class="fa-solid fa-link"></i>Connect</a></li>
                 <li data-order="6"><a href="#" class="navButton" id="leshan_button" onclick="">Leshan</a></li>
+                <li data-order="7"><a href="#" class="navButton" id="connactivityDevice_button" onclick="showPage('connactivityDevice')"><i class="fa-solid fa-link"></i>Connactivity Device</a></li>
             </ul>
         </ul>
     </ul>
@@ -116,6 +117,68 @@
         <h3>Pre-defined commands</h3>
         <button onclick="sendCustomCommand('0x02/0x0F/0x03')">Stop Gateway</button>
     </div>
+
+    <div id="connactivityDevice" class="page">
+        <h1>Connactivity Device</h1>
+        <p><strong>Status: </strong><span id="connectStatusCd">Not connected</span></p>
+        <div class="device-details hidden">
+            <p><strong>Serial number: </strong><span id="serialNumber">...</span></p>
+            <p><strong>Battery level: </strong><span id="batteryLevel">...</span>%</p>
+            <p><strong>Battery status: </strong><span id="batteryStatus">...</span></p>
+            <p><strong>Error code: </strong><span id="errorCode">...</span></p>
+            <p><strong>Total motor running time: </strong><span id="motorTime">...</span></p>
+            <p><strong>Total usage running time: </strong><span id="usageTime">...</span></p>
+        </div>
+        <section>
+            <h2>Simulation</h2>
+            <p>Start simulation on the connected IMC simulation box:</p>
+            <label for="simulationType"><strong>Select Simulation:</strong></label>
+            <select id="simulationType" name="simulationType">
+                <option value="">-- Select a simulation --</option>
+                <option value="rev50">Single revspeed 50 Hz</option>
+                <option value="rev150">Single revspeed 150 Hz</option>
+                <option value="rev250">Single revspeed 250 Hz</option>
+                <option value="highlow">High and Low revspeeds</option>
+                <option value="long">All revspeeds</option>
+            </select>
+            <button type="submit" id="startSimulationBtn" onclick="startSimulation()">Start Simulation</button>
+        </section>
+    
+        <section>
+            <h3><strong>Real-time Simulation Log (cleared after reload)</strong></h3>
+            <button type="submit" id="clearLogBtn">Clear log</button>
+            <div id="logBorder">
+                <div id="simulationLog"></div>
+            </div>
+        </section>
+    
+        <section>
+            <h2>Show Results</h2>
+            <p>Display various plots comparing the simulated data vs. the captured data on the connactivity device.</p>
+            <fieldset>
+                <legend><strong>Select Plot Types:</strong></legend>
+                <label><input type="checkbox" name="plotType" value="barplot_red"> Bar Plot (Simulated)</label>
+                <label><input type="checkbox" name="plotType" value="barplot_blue"> Bar Plot (Captured)</label>
+                <label><input type="checkbox" name="plotType" value="barplot"> Bar Plot</label>
+                <label><input type="checkbox" name="plotType" value="stepplot"> Step Plot</label>
+                <label><input type="checkbox" name="plotType" value="scatterplot"> Scatter Plot</label>
+                <label><input type="checkbox" name="plotType" value="heatmap"> Heatmap</label>
+            </fieldset>
+            <label for="sessionId"><strong>Select Device Session ID:</strong></label>
+            <select id="sessionId" name="sessionId">
+                <!-- Instance will be added here dynamically -->
+            </select>
+            <!-- <button id="fetchHistogramBtn">Fetch Histogram</button>
+            <p><strong>Histogram Data:</strong> <span id="histogramData">No data</span></p> -->
+            <label for="logfile"><strong>Select Simulation Logfile:</strong></label>
+            <select id="logfile" name="logfile">
+                <!-- Options will be added here dynamically -->
+            </select>
+            <button onclick="requestAndShowPlot()">Show Plot</button>
+            <div id="plotContainer" style="margin-top: 20px;"></div>
+        </section>
+    </div>
+    
 </main>
 </body>
 <script type="text/javascript" src="main.js"></script>
